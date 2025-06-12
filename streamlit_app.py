@@ -7,10 +7,17 @@ import mimetypes
 import io
 
 # --- Configurações iniciais ---
-SUPABASE_URL = "https://trpgnvhwfnqrvywqkdbu.supabase.co"
-SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-EMAIL_FROM = "Associação Coramdeo <contato@coramdeo.site>"
-RESEND_API_KEY = "re_hrEKpqGm_EbMgXQuW2oMWyXW26w38beu5"
+import os
+
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+RESEND_API_KEY = os.getenv("RESEND_API_KEY")
+
+from supabase import create_client
+supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+
+import resend
+resend.api_key = RESEND_API_KEY
 
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 resend.api_key = RESEND_API_KEY
