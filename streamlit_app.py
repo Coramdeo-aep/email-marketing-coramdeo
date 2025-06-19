@@ -19,9 +19,10 @@ resend.api_key = RESEND_API_KEY
 
 # --- Templates HTML Salvos ---
 TEMPLATES_HTML = {
-    "Convite para Associado": "templates/convite_associado.html",
-    "Voluntariado": "templates/voluntariado.html",
-    "Profissional Colaborador": "templates/profissional.html"
+    "Convite para Associado": "templates/associado.html",
+    "Voluntariado": "templates/voluntarios.html",
+    "Boas-vindas!": "templates/boas-vindas.html",
+    "Profissional Colaborador": "templates/profissionais.html"
 }
 
 # --- Layout ---
