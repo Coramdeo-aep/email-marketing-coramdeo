@@ -19,10 +19,9 @@ resend.api_key = RESEND_API_KEY
 
 # --- Templates HTML Salvos ---
 TEMPLATES_HTML = {
-    "Convite para Associado": "templates/associado.html",
-    "Voluntariado": "templates/voluntarios.html",
-    "Boas-vindas!": "templates/boas-vindas.html",
-    "Profissional Colaborador": "templates/profissionais.html"
+    "Convite para Associado": "templates/convite_associado.html",
+    "Voluntariado": "templates/voluntariado.html",
+    "Profissional Colaborador": "templates/profissional.html"
 }
 
 # --- Layout ---
@@ -59,44 +58,45 @@ filtro_interesses = st.sidebar.multiselect(
 # --- Corpo Principal ---
 st.subheader("Detalhes do e-mail")
 
-col1, col2 = st.columns(2)
-with col1:
+col_esquerda, col_direita = st.columns([1, 2], gap="large")
+
+with col_esquerda:
     assunto = st.text_input("Assunto do e-mail", "Convite para se tornar associado da Associação Coram Deo")
-with col2:
+
     corpo_padrao = st.text_area("Mensagem (usada se não enviar HTML)",
                                  "Olá! Agradecemos seu interesse na Associação Coram Deo.",
-                                 height=150)
+                                 height=100)
 
-st.markdown("### Escolher corpo do e-mail")
-col_html_select, col_html_preview = st.columns([1, 2])
-
-with col_html_select:
+    st.markdown("### Escolher corpo do e-mail")
     opcao_template = st.selectbox(
         "Escolha um modelo salvo:",
         ["Nenhum (usar texto ou upload)"] + list(TEMPLATES_HTML.keys())
     )
+
     corpo_html_upload = st.file_uploader("Ou enviar corpo HTML (.html ou .txt)", type=["html", "txt"])
 
-with col_html_preview:
+    arquivos_anexo = st.file_uploader("Anexar Arquivos (.pdf, .png, .jpg, .jpeg)",
+                                      type=["pdf", "png", "jpg", "jpeg"],
+                                      accept_multiple_files=True)
+
+    enviar = st.button("Enviar e-mails", use_container_width=True)
+
+with col_direita:
     corpo_email_template = ""
     if opcao_template != "Nenhum (usar texto ou upload)":
         caminho_template = TEMPLATES_HTML[opcao_template]
         with open(caminho_template, "r", encoding="utf-8") as f:
             corpo_email_template = f.read()
         st.markdown("#### Visualização do e-mail:")
-        st.components.v1.html(corpo_email_template, height=500, scrolling=True)
+        st.components.v1.html(corpo_email_template, height=600, scrolling=True)
     elif corpo_html_upload:
         corpo_email_template = corpo_html_upload.read().decode("utf-8")
         st.markdown("#### Visualização do e-mail enviado:")
-        st.components.v1.html(corpo_email_template, height=500, scrolling=True)
+        st.components.v1.html(corpo_email_template, height=600, scrolling=True)
     else:
         corpo_email_template = f"<p>{corpo_padrao}</p>"
-
-col_html, col_anexos = st.columns(2)
-with col_anexos:
-    arquivos_anexo = st.file_uploader("Anexar Arquivos (.pdf, .png, .jpg, .jpeg)",
-                                      type=["pdf", "png", "jpg", "jpeg"],
-                                      accept_multiple_files=True)
+        st.markdown("#### Visualização do e-mail em texto simples:")
+        st.write(corpo_email_template, unsafe_allow_html=True)
 
 # --- Buscar contatos ---
 def buscar_contatos():
@@ -129,9 +129,7 @@ def deduplicar_por_email(contatos):
             }
     return list(dedup.values())
 
-# --- Botão de envio ---
-enviar = st.button("Enviar e-mails")
-
+# --- Ação de envio ---
 if enviar:
     st.info("🔄 Buscando contatos...")
     contatos_raw = buscar_contatos()
