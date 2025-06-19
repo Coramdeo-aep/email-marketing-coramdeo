@@ -17,6 +17,14 @@ EMAIL_FROM = "Associação Coramdeo <contato@coramdeo.site>"
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 resend.api_key = RESEND_API_KEY
 
+# --- Templates HTML Salvos ---
+TEMPLATES_HTML = {
+    "Convite para Associado": "templates/associado.html",
+    "Voluntariado": "templates/voluntariado.html",
+    "Boas-vindas!": "templates/boas-vindas.html",
+    "Profissional Colaborador": "templates/profissionais.html"
+}
+
 # --- Layout ---
 st.set_page_config(page_title="Coram Deo - Envio de E-mails", layout="wide")
 
@@ -59,9 +67,32 @@ with col2:
                                  "Olá! Agradecemos seu interesse na Associação Coram Deo.",
                                  height=150)
 
+st.markdown("### Escolher corpo do e-mail")
+col_html_select, col_html_preview = st.columns([1, 2])
+
+with col_html_select:
+    opcao_template = st.selectbox(
+        "Escolha um modelo salvo:",
+        ["Nenhum (usar texto ou upload)"] + list(TEMPLATES_HTML.keys())
+    )
+    corpo_html_upload = st.file_uploader("Ou enviar corpo HTML (.html ou .txt)", type=["html", "txt"])
+
+with col_html_preview:
+    corpo_email_template = ""
+    if opcao_template != "Nenhum (usar texto ou upload)":
+        caminho_template = TEMPLATES_HTML[opcao_template]
+        with open(caminho_template, "r", encoding="utf-8") as f:
+            corpo_email_template = f.read()
+        st.markdown("#### Visualização do e-mail:")
+        st.components.v1.html(corpo_email_template, height=500, scrolling=True)
+    elif corpo_html_upload:
+        corpo_email_template = corpo_html_upload.read().decode("utf-8")
+        st.markdown("#### Visualização do e-mail enviado:")
+        st.components.v1.html(corpo_email_template, height=500, scrolling=True)
+    else:
+        corpo_email_template = f"<p>{corpo_padrao}</p>"
+
 col_html, col_anexos = st.columns(2)
-with col_html:
-    corpo_html = st.file_uploader("Corpo do E-mail (.html ou .txt)", type=["html", "txt"])
 with col_anexos:
     arquivos_anexo = st.file_uploader("Anexar Arquivos (.pdf, .png, .jpg, .jpeg)",
                                       type=["pdf", "png", "jpg", "jpeg"],
@@ -110,12 +141,6 @@ if enviar:
         st.warning("Nenhum contato encontrado com os filtros aplicados.")
     else:
         st.success(f"{len(contatos)} contatos encontrados. Iniciando envio...")
-
-        # Corpo do email
-        if corpo_html:
-            corpo_email_template = corpo_html.read().decode('utf-8')
-        else:
-            corpo_email_template = f"<p>{corpo_padrao}</p>"
 
         # Anexos
         anexos = []
