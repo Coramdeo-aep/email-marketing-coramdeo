@@ -105,25 +105,31 @@ def buscar_contatos():
 
     # --- FILTRO POR STATUS ---
     if filtro_resposta == "Somente não respondidos":
-        # Considera status vazio, nulo ou "Email não enviado"
         contatos = [c for c in contatos if not c.get("status") or c.get("status") in ("", "Email não enviado")]
     elif filtro_resposta == "Somente já respondidos":
-        # Considera todos com status diferente de vazio
         contatos = [c for c in contatos if c.get("status") and c.get("status") != "Email não enviado"]
-    # "Todos" = não filtra
 
     # --- FILTRO POR INTERESSE ---
     interesses = [i[1] for i in filtro_interesses]
+    todos_interesses_validos = [i[1] for i in interesses_opcoes if i[1] != "outros"]
 
     if "todos" not in interesses:
-        contatos = [c for c in contatos if (c.get("interesse") or "").lower() in interesses]
+        contatos_filtrados = []
+        for c in contatos:
+            valor_interesse = (c.get("interesse") or "").lower()
+            # Divide por vírgula, barra ou ponto e vírgula
+            partes = [p.strip() for p in valor_interesse.replace("/", ",").replace(";", ",").split(",") if p.strip()]
+            # Verifica se pelo menos um dos interesses selecionados está presente
+            if any(p in interesses for p in partes):
+                contatos_filtrados.append(c)
+        contatos = contatos_filtrados
 
     # Caso "Outros" esteja selecionado
     if "outros" in interesses:
         contatos += [
             c for c in contatos
             if not c.get("interesse")
-            or c.get("interesse").lower() not in [i[1] for i in interesses_opcoes if i[1] != "outros"]
+            or all(p not in todos_interesses_validos for p in (c.get("interesse") or "").lower().split(","))
         ]
 
     # --- FILTRO POR ATUALIZAÇÕES ---
