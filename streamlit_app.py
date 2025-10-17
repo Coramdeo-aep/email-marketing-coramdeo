@@ -11,7 +11,7 @@ import resend
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 RESEND_API_KEY = os.getenv("RESEND_API_KEY")
-EMAIL_FROM = "Associação Coram Deo <contato@coramdeo.site>"
+EMAIL_FROM = "Coram Deo - Associação Ensino Integral <contato@coramdeo.site>"
 
 # --- Inicializa Clients ---
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
