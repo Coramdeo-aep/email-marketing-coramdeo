@@ -213,10 +213,26 @@ if enviar:
             })
 
         for contato in contatos:
-            corpo_email = corpo_email_template.format(**contato)
-            status = enviar_email(contato["email"], contato.get("nome", ""), corpo_email, anexos, assunto)
+            # --- Captura e trata o primeiro nome ---
+            nome_completo = contato.get("nome", "").strip()
+            primeiro_nome = nome_completo.split(" ")[0] if nome_completo else ""
 
+            # Cria uma cópia do contato com o nome tratado para não alterar o original
+            contato_formatado = contato.copy()
+            contato_formatado["nome"] = primeiro_nome
+
+            # Monta o corpo do email substituindo o placeholder {nome}
+            try:
+                corpo_email = corpo_email_template.format(**contato_formatado)
+            except KeyError:
+                # Se faltar alguma variável no template, usa fallback simples
+                corpo_email = corpo_email_template.replace("{nome}", primeiro_nome)
+
+            # Envia o email
+            status = enviar_email(contato["email"], primeiro_nome, corpo_email, anexos, assunto)
+
+            # Exibição no painel Streamlit
             if status == "ok":
-                st.success(f"Enviado para {contato['nome']} - {contato['email']}")
+                st.success(f"Enviado para {nome_completo} - {contato['email']}")
             else:
                 st.error(f"Erro ao enviar para {contato['email']}")
