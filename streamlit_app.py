@@ -101,18 +101,32 @@ with col_direita:
 # --- Buscar contatos ---
 def buscar_contatos():
     query = supabase.table("contatos").select("*")
+    contatos = query.execute().data or []
 
-    contatos = query.execute().data
+    # --- FILTRO POR STATUS ---
+    if filtro_resposta == "Somente não respondidos":
+        # Considera status vazio, nulo ou "Email não enviado"
+        contatos = [c for c in contatos if not c.get("status") or c.get("status") in ("", "Email não enviado")]
+    elif filtro_resposta == "Somente já respondidos":
+        # Considera todos com status diferente de vazio
+        contatos = [c for c in contatos if c.get("status") and c.get("status") != "Email não enviado"]
+    # "Todos" = não filtra
+
+    # --- FILTRO POR INTERESSE ---
     interesses = [i[1] for i in filtro_interesses]
 
     if "todos" not in interesses:
         contatos = [c for c in contatos if (c.get("interesse") or "").lower() in interesses]
 
-    # Caso seja "Outros", pega os que não possuem nenhum interesse listado
+    # Caso "Outros" esteja selecionado
     if "outros" in interesses:
-        contatos += [c for c in contatos if not c.get("interesse") or c.get("interesse").lower() not in [i[1] for i in interesses_opcoes if i[1] != "outros"]]
+        contatos += [
+            c for c in contatos
+            if not c.get("interesse")
+            or c.get("interesse").lower() not in [i[1] for i in interesses_opcoes if i[1] != "outros"]
+        ]
 
-    # Filtra quem quer receber atualizações
+    # --- FILTRO POR ATUALIZAÇÕES ---
     contatos = [c for c in contatos if c.get("atualizacoes", "").strip().lower() != "não"]
 
     return contatos
